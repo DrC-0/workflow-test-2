@@ -18,13 +18,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Authentication
+        id: auth
         uses: google-github-actions/auth@v2
         with:
+          token_format: 'access_token'
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
 
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+      - name: Docker Auth
+        run: |
+          echo "${{ steps.auth.outputs.access_token }}" | docker login -u oauth2access_token --password-stdin https://asia-northeast1-docker.pkg.dev
 
       - name: Build Docker image
         run: docker build -t asia-northeast1-docker.pkg.dev/flask-api-test-487809/flask-test-repo/flask-api-app:${{ github.sha }} .
